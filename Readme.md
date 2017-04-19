@@ -13,3 +13,11 @@ Install the dependencies, on Debian / Ubuntu / Mint:
 ### Notes :
 
 I have not tested PyPass on MacOS it will probably fail on the completion part.
+
+## Screnshots
+
+![main](img/main.png)
+
+![complete](img/complete.png)
+
+![timeout](img/timeout.png)
