@@ -50,6 +50,7 @@ class PyPassWindow(Gtk.Window):
         # Completion
         entrycompletion = Gtk.EntryCompletion()
         entrycompletion.set_inline_selection(True)
+        entrycompletion.set_inline_completion(True)
         self.entry.set_completion(entrycompletion)
 
         liststore = Gtk.ListStore(str)
