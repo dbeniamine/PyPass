@@ -10,7 +10,7 @@ Install the dependencies, on Debian / Ubuntu / Mint:
 
     sudo apt install python-gi python-gi-cairo python3-gi python3-gi-cairo gir1.2-gtk-3.0
 
-Put pypass.py somewhere inside tour path and run `pypass.py`
+Put pypass.py somewhere inside your path and run `pypass.py`
 
 ### Notes :
 
