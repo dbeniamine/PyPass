@@ -59,6 +59,7 @@ class PyPassWindow(Gtk.Window):
                 liststore.append([row])
         entrycompletion.set_model(liststore)
         entrycompletion.set_text_column(0)
+        entrycompletion.set_match_func(self.complete_pass_entry, None)
 
         # Field for plain text answer
         self.answer = Gtk.Label("")
@@ -92,6 +93,9 @@ class PyPassWindow(Gtk.Window):
         basedir = os.environ['HOME']+"/.password-store/"
         for f in glob.glob(basedir+"**/*.gpg", recursive=True):
             yield f.replace(basedir, '').replace('.gpg', '')
+
+    def complete_pass_entry(self, completion, key, iter, user_data):
+        return key in completion.get_model().get_value(iter, 0)
 
     def on_copy_toggled(self, button):
         self.copyToClipboard = button.get_active()
