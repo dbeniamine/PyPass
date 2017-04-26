@@ -2,6 +2,15 @@
 
 PyPass is a small launcher for searching quickly your password store.
 
+## Features
+
++ Quick access to your passwords
++ Inline completion matching any substrings
++ Copy password to clipboard
++ Parametrable timeout
++ Restore old clipboard on exit
++ Display the password
+
 ## Installation
 
 It requires [pass](https://www.passwordstore.org/) to be already installed and configured
