@@ -106,9 +106,10 @@ class PyPassWindow(Gtk.Window):
     def rand_str(self, len):
         return ''.join(random.choice(string.ascii_lowercase) for i in range(len))
 
+    # Restore clipboard and leave
     def leave(self):
-        if self.clipboard is not None:
-            self.clipboard.set_text(self.rand_str(256), -1)
+        if self.clipboard_next_text is not None:
+            self.clipboard.set_text(self.clipboard_next_text, -1)
         Gtk.main_quit()
 
     def wait_and_leave(self, user_data):
@@ -127,10 +128,13 @@ class PyPassWindow(Gtk.Window):
         res = output.stdout.decode('utf-8')
 
         if output.returncode == 0 and self.copyToClipboard:
+            self.clipboard_next_text = self.clipboard.wait_for_text()
+            if self.clipboard_next_text is None:
+                self.clipboard_next_text = rand_str(256)
             self.clipboard.set_text(res, -1)
             res = "Password copied to clipboard"
         else:
-            self.clipboard = None
+            self.clipboard_next_text = None
 
         self.answer.set_text(res)
 
