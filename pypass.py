@@ -130,7 +130,7 @@ class PyPassWindow(Gtk.Window):
         if output.returncode == 0 and self.copyToClipboard:
             self.clipboard_next_text = self.clipboard.wait_for_text()
             if self.clipboard_next_text is None:
-                self.clipboard_next_text = rand_str(256)
+                self.clipboard_next_text = self.rand_str(256)
             self.clipboard.set_text(res, -1)
             res = "Password copied to clipboard"
         else:
