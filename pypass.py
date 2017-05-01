@@ -65,7 +65,7 @@ class PyPassWindow(Gtk.Window):
         self.answer = Gtk.Label("")
         self.answer.set_selectable(True)
 
-        self.button_run = Gtk.Button(label="Run and exit")
+        self.button_run = Gtk.Button.new_with_mnemonic("_Run and exit")
         self.button_run.connect("clicked", self.run_pass)
 
         self.timeout_label = Gtk.Label("Exit timeout (seconds)")
@@ -75,7 +75,7 @@ class PyPassWindow(Gtk.Window):
         self.button_sleep.connect("output", self.on_timeout_change)
         self.button_sleep.update()
 
-        self.button_clip = Gtk.CheckButton("Use clipboard")
+        self.button_clip = Gtk.CheckButton.new_with_mnemonic("Use _clipboard")
         self.button_clip.connect("toggled", self.on_copy_toggled)
         self.button_clip.set_active(self.copyToClipboard)
 
