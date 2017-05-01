@@ -22,16 +22,17 @@ import string
 import gi
 import glob
 import os
+import click
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GObject
 
 
 class PyPassWindow(Gtk.Window):
 
-    def __init__(self):
-        self.cmd = "pass"
-        self.args = []
-        self.copyToClipboard = True
+    def __init__(self, clipboard, magic, inline_selection, inline_completion):
+        self.copyToClipboard = clipboard
+        self.magic = magic
+        self.magic_output = False
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
 
         Gtk.Window.__init__(self, title="PyPass")
@@ -49,8 +50,8 @@ class PyPassWindow(Gtk.Window):
 
         # Completion
         entrycompletion = Gtk.EntryCompletion()
-        entrycompletion.set_inline_selection(True)
-        entrycompletion.set_inline_completion(True)
+        entrycompletion.set_inline_selection(inline_selection)
+        entrycompletion.set_inline_completion(inline_completion)
         self.entry.set_completion(entrycompletion)
 
         liststore = Gtk.ListStore(str)
@@ -79,12 +80,28 @@ class PyPassWindow(Gtk.Window):
         self.button_clip.connect("toggled", self.on_copy_toggled)
         self.button_clip.set_active(self.copyToClipboard)
 
+        if magic:
+            self.button_magic = Gtk.RadioButton.new_with_mnemonic_from_widget(None, "_Magic")
+            self.button_magic.connect("toggled", self.on_magic_toggled, "Magic")
+            self.button_more_magic = Gtk.RadioButton.new_from_widget(self.button_magic)
+            self.button_more_magic.set_label("More magic")
+            self.button_more_magic.connect("toggled", self.on_magic_toggled, "More magic")
+            self.button_more_magic.set_active(True)
+
         self.progressbar = Gtk.ProgressBar()
 
         self.grid.attach(self.entry, 0, 0, 2, 2)
         self.grid.attach_next_to(self.button_run, self.entry, Gtk.PositionType.RIGHT, 1, 3)
         self.grid.attach_next_to(self.button_clip, self.entry, Gtk.PositionType.BOTTOM, 2, 1)
-        self.grid.attach_next_to(self.timeout_label, self.button_clip, Gtk.PositionType.BOTTOM, 1, 1)
+
+        if magic:
+            self.grid.attach_next_to(self.button_magic, self.button_clip, Gtk.PositionType.BOTTOM, 1, 1)
+            self.grid.attach_next_to(self.button_more_magic, self.button_magic, Gtk.PositionType.RIGHT, 1, 1)
+            prev_button = self.button_magic
+        else:
+            prev_button = self.button_clip
+
+        self.grid.attach_next_to(self.timeout_label, prev_button, Gtk.PositionType.BOTTOM, 1, 1)
         self.grid.attach_next_to(self.button_sleep, self.timeout_label, Gtk.PositionType.RIGHT, 1, 1)
         self.grid.attach_next_to(self.answer, self.timeout_label, Gtk.PositionType.BOTTOM, 4, 1)
         self.grid.attach_next_to(self.progressbar, self.answer, Gtk.PositionType.BOTTOM, 4, 1)
@@ -99,6 +116,9 @@ class PyPassWindow(Gtk.Window):
 
     def on_copy_toggled(self, button):
         self.copyToClipboard = button.get_active()
+
+    def on_magic_toggled(self, button, name):
+        self.magic_output = name == "Magic"
 
     def on_timeout_change(self, button):
         self.wait = button.get_value_as_int()
@@ -120,8 +140,12 @@ class PyPassWindow(Gtk.Window):
         return True
 
     def run_pass(self, button):
+        if self.magic_output:
+            self.answer.set_text("Magic")
+            return
+
         # Prepare command
-        CMD = [self.cmd, self.entry.get_text()]
+        CMD = ["pass", self.entry.get_text()]
 
         # Call pass
         output = run(CMD, stdout=PIPE, stderr=STDOUT)
@@ -142,7 +166,17 @@ class PyPassWindow(Gtk.Window):
         self.fraction = 1/self.wait
         GObject.timeout_add(1000, self.wait_and_leave, None)
 
-win = PyPassWindow()
-win.connect("delete-event", Gtk.main_quit)
-win.show_all()
-Gtk.main()
+
+@click.command()
+@click.option('--clipboard/--no-clipboard', default=True, help="Copy password to clipboard by default")
+@click.option('--inline_selection/--no-inline_selection', default=True, help="Use inline selection")
+@click.option('--inline_completion/--no-inline_completion', default=True, help="Use inline completion")
+@click.option('--magic/--no-magic', default=False, help="Magic")
+def pypass(magic, clipboard, inline_selection, inline_completion):
+    win = PyPassWindow(clipboard, magic, inline_selection, inline_completion)
+    win.connect("delete-event", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
+
+if __name__ == "__main__":
+    pypass()
