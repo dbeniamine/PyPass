@@ -148,16 +148,18 @@ class PyPassWindow(Gtk.Window):
         CMD = ["pass", self.entry.get_text()]
 
         # Call pass
-        output = run(CMD, stdout=PIPE, stderr=STDOUT)
-        res = output.stdout.decode('utf-8')
+        output = run(CMD, stdout=PIPE, stderr=PIPE)
 
-        if output.returncode == 0 and self.copyToClipboard:
-            self.clipboard_next_text = self.clipboard.wait_for_text()
-            if self.clipboard_next_text is None:
-                self.clipboard_next_text = self.rand_str(256)
-            self.clipboard.set_text(res, -1)
-            res = "Password copied to clipboard"
+        if output.returncode == 0:
+            res = output.stdout.decode('utf-8')
+            if self.copyToClipboard:
+                self.clipboard_next_text = self.clipboard.wait_for_text()
+                if self.clipboard_next_text is None:
+                    self.clipboard_next_text = self.rand_str(256)
+                self.clipboard.set_text(res, -1)
+                res = "Password copied to clipboard"
         else:
+            res = output.stderr.decode('utf-8')
             self.clipboard_next_text = None
 
         self.answer.set_text(res)
