@@ -31,6 +31,7 @@ class PyPassWindow(Gtk.Window):
 
     def __init__(self, clipboard, magic, inline_selection, inline_completion):
         self.copyToClipboard = clipboard
+        self.clipboard_next_text = None
         self.magic = magic
         self.magic_output = False
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
@@ -160,7 +161,6 @@ class PyPassWindow(Gtk.Window):
                 res = "Password copied to clipboard"
         else:
             res = output.stderr.decode('utf-8')
-            self.clipboard_next_text = None
 
         self.answer.set_text(res)
 
