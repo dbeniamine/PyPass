@@ -160,9 +160,15 @@ class PyPassWindow(Gtk.Window):
         self.progressbar.set_fraction(self.progressbar.get_fraction()+self.fraction)
         return True
 
+    def timeout(self):
+        # Trigger end of programm
+        self.fraction = 1/self.wait
+        GObject.timeout_add(1000, self.wait_and_leave, None)
+
     def run_pass(self, button):
         if self.magic_output:
             self.answer.set_text("Magic")
+            self.timeout()
             return
 
         # Prepare command
@@ -186,10 +192,7 @@ class PyPassWindow(Gtk.Window):
             res = output.stderr.decode('utf-8')
 
         self.answer.set_text(res)
-
-        # Trigger end of programm
-        self.fraction = 1/self.wait
-        GObject.timeout_add(1000, self.wait_and_leave, None)
+        self.timeout()
 
 
 @click.command()
