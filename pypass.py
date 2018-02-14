@@ -29,13 +29,14 @@ from gi.repository import Gtk, Gdk, GObject
 
 class PyPassWindow(Gtk.Window):
 
-    def __init__(self, clipboard, magic, inline_selection, inline_completion, should_hide):
-        self.copyToClipboard = clipboard or should_hide
+    def __init__(self, clipboard, magic, inline_selection, inline_completion, hide_after_pass):
+        self.copyToClipboard = clipboard or hide_after_pass
         self.clipboard_next_text = None
         self.magic = magic
         self.magic_output = False
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-        self.should_hide = should_hide
+        self.hide_after_pass = hide_after_pass
+        self.hide_if_clipboard = False
 
         Gtk.Window.__init__(self, title="PyPass")
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
@@ -81,11 +82,11 @@ class PyPassWindow(Gtk.Window):
         self.button_clip = Gtk.CheckButton.new_with_mnemonic("Use _clipboard")
         self.button_clip.connect("toggled", self.on_copy_toggled)
 
-        self.button_hide = Gtk.CheckButton.new_with_mnemonic("_Hide window on success (requires clipboard)")
+        self.button_hide = Gtk.CheckButton.new_with_mnemonic("_Hide window on success")
         self.button_hide.connect("toggled", self.on_hide_toggled)
 
         self.button_clip.set_active(self.copyToClipboard)
-        self.button_hide.set_active(self.should_hide)
+        self.button_hide.set_active(self.hide_after_pass)
 
         if magic:
             self.button_magic = Gtk.RadioButton.new_with_mnemonic_from_widget(None, "_Magic")
@@ -124,14 +125,17 @@ class PyPassWindow(Gtk.Window):
 
     def on_copy_toggled(self, button):
         self.copyToClipboard = button.get_active()
-        # Deactivate should_hide if clipboard is not used
-        if(self.should_hide):
-            self.button_hide.set_active(self.copyToClipboard)
+        # We will need to (re)active hide button if we use clipboard and the user want hide
+        hide_active = self.copyToClipboard and (self.hide_if_clipboard or self.hide_after_pass)
+        # Remember that user want to hide window in case they reactivate clipboard
+        self.hide_if_clipboard = self.hide_after_pass and not self.copyToClipboard
+        # update hide button
+        self.button_hide.set_active(hide_active)
 
     def on_hide_toggled(self, button):
-        self.should_hide = button.get_active()
+        self.hide_after_pass = button.get_active()
         # Force use clipboard
-        if(self.should_hide and not self.copyToClipboard):
+        if(self.hide_after_pass and not self.copyToClipboard):
             self.button_clip.clicked()
 
     def on_magic_toggled(self, button, name):
@@ -176,7 +180,7 @@ class PyPassWindow(Gtk.Window):
                 self.clipboard.set_text(res, -1)
                 res = "Password copied to clipboard"
                 # Hide window if using clipboard and no error
-                if(self.should_hide):
+                if(self.hide_after_pass):
                     self.hide()
         else:
             res = output.stderr.decode('utf-8')
