@@ -29,7 +29,7 @@ from gi.repository import Gtk, Gdk, GObject
 
 class PyPassWindow(Gtk.Window):
 
-    def __init__(self, clipboard, magic, inline_selection, inline_completion, hide_after_pass):
+    def __init__(self, clipboard, magic, inline_selection, inline_completion, hide_after_pass, timeout):
         self.copyToClipboard = clipboard or hide_after_pass
         self.clipboard_next_text = None
         self.magic = magic
@@ -73,11 +73,12 @@ class PyPassWindow(Gtk.Window):
         self.button_run.connect("clicked", self.run_pass)
 
         self.timeout_label = Gtk.Label("Exit timeout (seconds)")
-        adjustment = Gtk.Adjustment(10, 5, 60, 5, 10, 0)
+
         self.button_sleep = Gtk.SpinButton()
-        self.button_sleep.set_adjustment(adjustment)
+        self.button_sleep.set_adjustment(Gtk.Adjustment(timeout, 5, 60, 5, 10, 0))
         self.button_sleep.connect("output", self.on_timeout_change)
         self.button_sleep.update()
+        self.button_sleep.set_value(timeout)
 
         self.button_clip = Gtk.CheckButton.new_with_mnemonic("Use _clipboard")
         self.button_clip.connect("toggled", self.on_copy_toggled)
@@ -201,8 +202,9 @@ class PyPassWindow(Gtk.Window):
 @click.option('--inline_completion/--no-inline_completion', default=True, help="Use inline completion")
 @click.option('--magic/--no-magic', default=False, help="Magic")
 @click.option('--hide/--no-hide', default=False, help="Hide window after running pass successfully (imply --clipboard)")
-def pypass(magic, clipboard, inline_selection, inline_completion, hide):
-    win = PyPassWindow(clipboard, magic, inline_selection, inline_completion, hide)
+@click.option('--timeout', default=10, help="Set timeout value, default 10")
+def pypass(magic, clipboard, inline_selection, inline_completion, hide, timeout):
+    win = PyPassWindow(clipboard, magic, inline_selection, inline_completion, hide, timeout)
     win.connect("delete-event", Gtk.main_quit)
     win.show_all()
     Gtk.main()
