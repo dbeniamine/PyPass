@@ -122,7 +122,10 @@ class PyPassWindow(Gtk.Window):
             yield f.replace(basedir, '').replace('.gpg', '')
 
     def complete_pass_entry(self, completion, key, iter, user_data):
-        return key in completion.get_model().get_value(iter, 0)
+        ret = True
+        for subk in key.split(' '):
+            ret &= subk in completion.get_model().get_value(iter, 0)
+        return ret
 
     def on_copy_toggled(self, button):
         self.copyToClipboard = button.get_active()
