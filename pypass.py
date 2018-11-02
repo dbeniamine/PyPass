@@ -187,7 +187,7 @@ class PyPassWindow(Gtk.Window):
                 self.clipboard_next_text = self.clipboard.wait_for_text()
                 if self.clipboard_next_text is None:
                     self.clipboard_next_text = self.rand_str(256)
-                self.clipboard.set_text(res, -1)
+                self.clipboard.set_text(res.splitlines()[0], -1)
                 res = "Password copied to clipboard"
                 # Hide window if using clipboard and no error
                 if(self.hide_after_pass):
