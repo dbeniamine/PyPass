@@ -23,6 +23,7 @@ import gi
 import glob
 import os
 import click
+import re
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GObject
 
@@ -188,6 +189,8 @@ class PyPassWindow(Gtk.Window):
 
         if output.returncode == 0:
             res, infos = output.stdout.decode('utf-8').split("\n",1)
+            # Display html infos
+            infos =  re.sub(r'(https?[^\s]*)', r'<a href="\1">\1</a>', infos)
             if self.copyToClipboard:
                 self.clipboard_next_text = self.clipboard.wait_for_text()
                 if self.clipboard_next_text is None:
@@ -199,10 +202,10 @@ class PyPassWindow(Gtk.Window):
                     self.hide()
         else:
             res = "Pass returned error code : {}".format(output.returncode)
-            infos = output.stderr.decode('utf-8')
+            infos = "<b>"+output.stderr.decode('utf-8')+"</b>"
 
         self.answer.set_text(res)
-        self.infos.set_text(infos)
+        self.infos.set_markup(infos)
         self.timeout()
 
 
