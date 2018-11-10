@@ -192,14 +192,14 @@ class PyPassWindow(Gtk.Window):
                 self.clipboard_next_text = self.clipboard.wait_for_text()
                 if self.clipboard_next_text is None:
                     self.clipboard_next_text = self.rand_str(256)
-                self.clipboard.set_text(res)
+                self.clipboard.set_text(res, -1)
                 res = "Password copied to clipboard"
                 # Hide window if using clipboard and no error
                 if(self.hide_after_pass):
                     self.hide()
         else:
-            res = output.stderr.decode('utf-8')
-            infos = ""
+            res = "Pass returned error code : {}".format(output.returncode)
+            infos = output.stderr.decode('utf-8')
 
         self.answer.set_text(res)
         self.infos.set_text(infos)
