@@ -69,6 +69,10 @@ class PyPassWindow(Gtk.Window):
         self.answer = Gtk.Label("")
         self.answer.set_selectable(True)
 
+        # Field for plain text infos
+        self.infos = Gtk.Label("")
+        self.infos.set_selectable(True)
+
         self.button_run = Gtk.Button.new_with_mnemonic("_Run and exit")
         self.button_run.connect("clicked", self.run_pass)
 
@@ -114,7 +118,8 @@ class PyPassWindow(Gtk.Window):
         self.grid.attach_next_to(self.timeout_label, prev_button, Gtk.PositionType.BOTTOM, 1, 1)
         self.grid.attach_next_to(self.button_sleep, self.timeout_label, Gtk.PositionType.RIGHT, 1, 1)
         self.grid.attach_next_to(self.answer, self.timeout_label, Gtk.PositionType.BOTTOM, 4, 1)
-        self.grid.attach_next_to(self.progressbar, self.answer, Gtk.PositionType.BOTTOM, 4, 1)
+        self.grid.attach_next_to(self.infos, self.answer, Gtk.PositionType.BOTTOM, 4, 1)
+        self.grid.attach_next_to(self.progressbar, self.infos, Gtk.PositionType.BOTTOM, 4, 1)
 
     def get_pass_completion(self):
         basedir = os.environ['HOME']+"/.password-store/"
@@ -182,20 +187,22 @@ class PyPassWindow(Gtk.Window):
         output = run(CMD, stdout=PIPE, stderr=PIPE)
 
         if output.returncode == 0:
-            res = output.stdout.decode('utf-8')
+            res, infos = output.stdout.decode('utf-8').split("\n",1)
             if self.copyToClipboard:
                 self.clipboard_next_text = self.clipboard.wait_for_text()
                 if self.clipboard_next_text is None:
                     self.clipboard_next_text = self.rand_str(256)
-                self.clipboard.set_text(res.splitlines()[0], -1)
+                self.clipboard.set_text(res)
                 res = "Password copied to clipboard"
                 # Hide window if using clipboard and no error
                 if(self.hide_after_pass):
                     self.hide()
         else:
             res = output.stderr.decode('utf-8')
+            infos = ""
 
         self.answer.set_text(res)
+        self.infos.set_text(infos)
         self.timeout()
 
 
