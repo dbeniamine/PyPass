@@ -61,7 +61,7 @@ class PyPassWindow(Gtk.Window):
         liststore = Gtk.ListStore(str)
         # Todo call pass for completion
         for row in self.get_pass_completion():
-                liststore.append([row])
+            liststore.append([row])
         entrycompletion.set_model(liststore)
         entrycompletion.set_text_column(0)
         entrycompletion.set_match_func(self.complete_pass_entry, None)
@@ -130,7 +130,7 @@ class PyPassWindow(Gtk.Window):
     def complete_pass_entry(self, completion, key, iter, user_data):
         ret = True
         for subk in key.split(' '):
-            ret &= subk in completion.get_model().get_value(iter, 0)
+            ret &= subk in completion.get_model().get_value(iter, 0).lower()
         return ret
 
     def on_copy_toggled(self, button):
@@ -188,9 +188,9 @@ class PyPassWindow(Gtk.Window):
         output = run(CMD, stdout=PIPE, stderr=PIPE)
 
         if output.returncode == 0:
-            res, infos = output.stdout.decode('utf-8').split("\n",1)
+            res, infos = output.stdout.decode('utf-8').split("\n", 1)
             # Display html infos
-            infos =  re.sub(r'(https?[^\s]*)', r'<a href="\1">\1</a>', infos)
+            infos = re.sub(r'(https?[^\s]*)', r'<a href="\1">\1</a>', infos)
             if self.copyToClipboard:
                 self.clipboard_next_text = self.clipboard.wait_for_text()
                 if self.clipboard_next_text is None:
@@ -221,6 +221,7 @@ def pypass(magic, clipboard, inline_selection, inline_completion, hide, timeout)
     win.connect("delete-event", Gtk.main_quit)
     win.show_all()
     Gtk.main()
+
 
 if __name__ == "__main__":
     pypass()
